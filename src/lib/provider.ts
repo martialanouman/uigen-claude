@@ -69,9 +69,9 @@ export class MockLanguageModel implements LanguageModelV1 {
     if (promptLower.includes("form")) {
       componentType = "form";
       componentName = "ContactForm";
-    } else if (promptLower.includes("card")) {
+    } else if (promptLower.includes("card") || promptLower.includes("profile")) {
       componentType = "card";
-      componentName = "Card";
+      componentName = "ProfileCard";
     }
 
     // Step 1: Create component file
@@ -205,6 +205,8 @@ const ContactForm = () => {
     email: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -213,19 +215,41 @@ const ContactForm = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
     console.log('Form submitted:', formData);
-    // Handle form submission here
+    setIsSubmitting(false);
+    setIsSubmitted(true);
   };
 
+  if (isSubmitted) {
+    return (
+      <div className="max-w-md mx-auto p-8 bg-white rounded-2xl shadow-lg border border-gray-100">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Message Sent!</h3>
+          <p className="text-gray-500">We'll get back to you soon.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6">Contact Us</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="max-w-md mx-auto p-8 bg-white rounded-2xl shadow-lg border border-gray-100">
+      <div className="mb-6">
+        <h2 className="text-2xl font-semibold text-gray-900">Get in Touch</h2>
+        <p className="text-gray-500 mt-1">We'd love to hear from you</p>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-            Name
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
+            Full Name
           </label>
           <input
             type="text"
@@ -234,13 +258,14 @@ const ContactForm = () => {
             value={formData.name}
             onChange={handleChange}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="John Doe"
+            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all duration-200"
           />
         </div>
-        
+
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
+            Email Address
           </label>
           <input
             type="email"
@@ -249,12 +274,13 @@ const ContactForm = () => {
             value={formData.email}
             onChange={handleChange}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="john@example.com"
+            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all duration-200"
           />
         </div>
-        
+
         <div>
-          <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1.5">
             Message
           </label>
           <textarea
@@ -264,15 +290,25 @@ const ContactForm = () => {
             onChange={handleChange}
             required
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="How can we help you?"
+            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all duration-200 resize-none"
           />
         </div>
-        
+
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
+          disabled={isSubmitting}
+          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          Send Message
+          {isSubmitting ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Sending...
+            </span>
+          ) : 'Send Message'}
         </button>
       </form>
     </div>
@@ -282,37 +318,62 @@ const ContactForm = () => {
 export default ContactForm;`;
 
       case "card":
-        return `import React from 'react';
+        return `import React, { useState } from 'react';
 
-const Card = ({ 
-  title = "Welcome to Our Service", 
-  description = "Discover amazing features and capabilities that will transform your experience.",
-  imageUrl,
-  actions 
+const ProfileCard = ({
+  name = "Sarah Anderson",
+  email = "sarah.anderson@example.com",
+  role = "Product Designer",
+  avatarUrl = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face"
 }) => {
+  const [isFollowing, setIsFollowing] = useState(false);
+
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      {imageUrl && (
-        <img 
-          src={imageUrl} 
-          alt={title}
-          className="w-full h-48 object-cover"
-        />
-      )}
-      <div className="p-6">
-        <h3 className="text-xl font-semibold mb-2">{title}</h3>
-        <p className="text-gray-600 mb-4">{description}</p>
-        {actions && (
-          <div className="mt-4">
-            {actions}
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden max-w-sm">
+      <div className="h-24 bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-600" />
+      <div className="px-6 pb-6">
+        <div className="flex justify-center -mt-12 mb-4">
+          <img
+            src={avatarUrl}
+            alt={name}
+            className="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover"
+          />
+        </div>
+        <div className="text-center mb-4">
+          <h3 className="text-xl font-semibold text-gray-900">{name}</h3>
+          <p className="text-sm text-violet-600 font-medium">{role}</p>
+          <p className="text-sm text-gray-500 mt-1">{email}</p>
+        </div>
+        <div className="flex gap-6 justify-center mb-5 py-3 border-y border-gray-100">
+          <div className="text-center">
+            <p className="text-lg font-semibold text-gray-900">142</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide">Posts</p>
           </div>
-        )}
+          <div className="text-center">
+            <p className="text-lg font-semibold text-gray-900">4.2k</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide">Followers</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-semibold text-gray-900">218</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide">Following</p>
+          </div>
+        </div>
+        <button
+          onClick={() => setIsFollowing(!isFollowing)}
+          className={\`w-full py-2.5 px-4 rounded-xl font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-violet-500 \${
+            isFollowing
+              ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700 shadow-md hover:shadow-lg'
+          }\`}
+        >
+          {isFollowing ? 'Following' : 'Follow'}
+        </button>
       </div>
     </div>
   );
 };
 
-export default Card;`;
+export default ProfileCard;`;
 
       default:
         return `import { useState } from 'react';
@@ -320,40 +381,34 @@ export default Card;`;
 const Counter = () => {
   const [count, setCount] = useState(0);
 
-  const increment = () => {
-    setCount(count + 1);
-  };
-
-  const decrement = () => {
-    setCount(count - 1);
-  };
-
-  const reset = () => {
-    setCount(0);
-  };
-
   return (
-    <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4">Counter</h2>
-      <div className="text-4xl font-bold mb-6">{count}</div>
-      <div className="flex gap-4">
-        <button 
-          onClick={decrement}
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 max-w-xs">
+      <div className="text-center mb-6">
+        <h2 className="text-lg font-medium text-gray-500 uppercase tracking-wide">Counter</h2>
+        <div className="mt-4 text-6xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+          {count}
+        </div>
+      </div>
+      <div className="flex gap-3">
+        <button
+          onClick={() => setCount(c => c - 1)}
+          className="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400 transition-all duration-200"
         >
-          Decrease
+          <span className="text-xl">−</span>
         </button>
-        <button 
-          onClick={reset}
-          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+        <button
+          onClick={() => setCount(0)}
+          className="py-3 px-4 bg-gray-100 text-gray-500 rounded-xl font-medium hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400 transition-all duration-200"
         >
-          Reset
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
         </button>
-        <button 
-          onClick={increment}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+        <button
+          onClick={() => setCount(c => c + 1)}
+          className="flex-1 py-3 px-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-medium hover:from-violet-700 hover:to-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-violet-500 transition-all duration-200 shadow-md hover:shadow-lg"
         >
-          Increase
+          <span className="text-xl">+</span>
         </button>
       </div>
     </div>
@@ -367,56 +422,32 @@ export default Counter;`;
   private getOldStringForReplace(componentType: string): string {
     switch (componentType) {
       case "form":
-        return "    console.log('Form submitted:', formData);";
+        return '<p className="text-gray-500 mt-1">We\'d love to hear from you</p>';
       case "card":
-        return '      <div className="p-6">';
+        return '<div className="h-24 bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-600" />';
       default:
-        return "  const increment = () => setCount(count + 1);";
+        return '<h2 className="text-lg font-medium text-gray-500 uppercase tracking-wide">Counter</h2>';
     }
   }
 
   private getNewStringForReplace(componentType: string): string {
     switch (componentType) {
       case "form":
-        return "    console.log('Form submitted:', formData);\n    alert('Thank you! We\\'ll get back to you soon.');";
+        return '<p className="text-gray-500 mt-1">We\'d love to hear from you ✨</p>';
       case "card":
-        return '      <div className="p-6 hover:bg-gray-50 transition-colors">';
+        return '<div className="h-24 bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-600 relative overflow-hidden"><div className="absolute inset-0 bg-[url(\'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIxLTEuNzktNC00LTRzLTQgMS43OS00IDQgMS43OSA0IDQgNCA0LTEuNzkgNC00eiIvPjwvZz48L2c+PC9zdmc+\')] opacity-30" /></div>';
       default:
-        return "  const increment = () => setCount(prev => prev + 1);";
+        return '<h2 className="text-lg font-medium text-gray-500 uppercase tracking-wide">Click Counter</h2>';
     }
   }
 
   private getAppCode(componentName: string): string {
-    if (componentName === "Card") {
-      return `import Card from '@/components/Card';
-
-export default function App() {
-  return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-8">
-      <div className="w-full max-w-md">
-        <Card 
-          title="Amazing Product"
-          description="This is a fantastic product that will change your life. Experience the difference today!"
-          actions={
-            <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
-              Learn More
-            </button>
-          }
-        />
-      </div>
-    </div>
-  );
-}`;
-    }
-
     return `import ${componentName} from '@/components/${componentName}';
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-8">
-      <div className="w-full max-w-md">
-        <${componentName} />
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-8">
+      <${componentName} />
     </div>
   );
 }`;
